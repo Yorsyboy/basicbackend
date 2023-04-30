@@ -4,7 +4,7 @@ import {isAdmin} from "../controllers/middleware.js"
 
 const UserRouter = express.Router();
 
-UserRouter.get("/", isAdmin, getUsers);
+UserRouter.get("/", getUsers);
 
 UserRouter.post("/register", register);
 
