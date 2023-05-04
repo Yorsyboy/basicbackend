@@ -65,15 +65,6 @@ export const getLoggedInUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-export const getUsers = asyncHandler(async (req, res, next) => {
-  try {
-    const users = await User.find();
-    res.status(200).json(users);
-  } catch (err) {
-    next(err);
-  }
-});
-
 //Generate token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
