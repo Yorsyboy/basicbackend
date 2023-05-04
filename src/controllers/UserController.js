@@ -1,56 +1,82 @@
 import User from "../models/User.js";
 import bycrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import asyncHandler from "express-async-handler";
 
+export const register = asyncHandler(async (req, res) => {
+  const { name, email, password, imgUrl } = req.body;
+  if (!name || !email || !password || !imgUrl) {
+    res.status(400).json({ message: "Please fill all fields" });
+  }
 
-export const register = async (req, res, next) => {
-    const { name, username, password, imgUrl, role } = req.body;
-    const hashedPassword = await bycrypt.hash(password, 10);
-    const user = new User({
+  //check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+    res.status(400).json({ message: "User already exists" });
+  }
+
+  //hash password
+  const hashedPassword = await bycrypt.hash(password, 10);
+
+  //create user
+  const user = new User({
+    name,
+    email,
+    password: hashedPassword,
+    imgUrl,
+  });
+
+  //save user
+  try {
+    await user.save();
+    res.status(201).json({ message: "user created", user, token: generateToken(user._id) });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  //check if user already exists
+  const user = await User.findOne({ email });
+
+  try {
+    if (user && (await bycrypt.compare(password, user.password))) {
+      res.status(200).json({ user, token: generateToken(user._id) });
+    } else {
+      res.status(401).json({ message: "Invalid credentials" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export const getLoggedInUser = asyncHandler(async (req, res, next) => {
+  try {
+    const { _id, name, email} = await User.findById(req.user._id);
+    res.status(200).json({
+        id: _id,
         name,
-        username,
-        password: hashedPassword,
-        imgUrl,
+        email,
     });
-    try {
-        const newUser = await user.save();
-        const admin = 'admin'
-        const role = user.username === admin ? 'admin' : 'user';
-        const token = jwt.sign({
-            username: user.username,
-            role: role
-        } , process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        res.status(201).json({ message: "user created", token, decoded });
-    } catch (error) {
-        next(error);
-    }
-};
+  } catch (err) {
+    next(err);
+  }
+});
 
-export const login = async (req, res) => {
-    try {
-        const user = await User.findOne({ username: req.body.username });
-        if (user) {
-            const validPassword = await bycrypt.compare(req.body.password, user.password);
-            if (validPassword) {
-                const bearer = jwt.sign({ username: user.username, role: user.role }, process.env.ACCESS_TOKEN_SECRET);
-                res.status(200).json({ bearer: bearer });
-            } else {
-                res.status(401).json({ message: "password doesn't match" });
-            }
-        } else {
-            res.status(401).json({ message: "user doesn't exist" });
-        }
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+export const getUsers = asyncHandler(async (req, res, next) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+});
 
-export const getUsers = async (req, res, next) => {
-    try {
-        const users = await User.find();
-        res.json(users);
-    } catch (err) {
-        next(err);
-    }
+//Generate token
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+    });
 };
