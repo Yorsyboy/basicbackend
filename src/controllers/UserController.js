@@ -53,16 +53,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const getLoggedInUser = asyncHandler(async (req, res, next) => {
-  try {
-    const { _id, name, email} = await User.findById(req.user._id);
-    res.status(200).json({
-        id: _id,
-        name,
-        email,
-    });
-  } catch (err) {
-    next(err);
-  }
+  res.status(200).json(req.user);
 });
 
 //Generate token

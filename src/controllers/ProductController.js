@@ -46,9 +46,8 @@ export const updatedProduct = asyncHandler(async (req, res, next) => {
             throw new Error("Product not found");
         }
 
-        const user = await User.findById(req.user.id);
         // check for user
-        if (!user) {
+        if (!req.user) {
             res.status(404);
             throw new Error("User not found");
         }
@@ -83,9 +82,8 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
             throw new Error("Product not found");
         }
 
-        const user = await User.findById(req.user.id);
         // check for user
-        if (!user) {
+        if (!req.user) {
             res.status(404);
             throw new Error("User not found");
         }
