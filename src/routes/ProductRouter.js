@@ -12,6 +12,6 @@ ProductRouter.post("/", protect, createProduct);
 
 ProductRouter.put("/:id", protect, updatedProduct);
 
-ProductRouter.delete("/:", protect, deleteProduct);
+ProductRouter.delete("/:id", protect, deleteProduct);
 
 export default ProductRouter;

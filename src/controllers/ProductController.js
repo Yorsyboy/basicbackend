@@ -2,6 +2,7 @@ import Product from "../models/Product.js";
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 
+
 export const getProduct = asyncHandler(async (req, res, next) => {
     try {
         const products = await Product.find();
@@ -24,6 +25,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     try {
         const product = new Product({
             user: req.user.id,
+            username: req.user.name,
             name: req.body.name,
             description: req.body.description,
             price: req.body.price,
@@ -52,22 +54,24 @@ export const updatedProduct = asyncHandler(async (req, res, next) => {
             throw new Error("User not found");
         }
 
+        console.log(findProduct.user.toString(), req.user.id);
+
         // check if user is the owner of the product
         if (findProduct.user.toString() !== req.user.id) {
             res.status(401);
             throw new Error("User not authorized");
         }
 
-        const product = await Product.findByIdAndUpdate(req.params.id);
+        // const product = await Product.findByIdAndUpdate(req.params.id);
 
-        product.name = req.body.name;
-        product.description = req.body.description;
-        product.price = req.body.price;
-        product.imgUrl = req.body.imgUrl;
-        product.quantity = req.body.quantity;
-        product.isAvailable = req.body.isAvailable;
+        findProduct.name = req.body.name;
+        findProduct.description = req.body.description;
+        findProduct.price = req.body.price;
+        findProduct.imgUrl = req.body.imgUrl;
+        findProduct.quantity = req.body.quantity;
+        findProduct.isAvailable = req.body.isAvailable;
         
-        const updatedProduct = await product.save();
+        const updatedProduct = await findProduct.save();
         res.json(updatedProduct);
     } catch (err) {
         next(err);

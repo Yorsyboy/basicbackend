@@ -4,7 +4,12 @@ const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
     user: {
-        type: Schema.Types.ObjectId,
+        type: String,
+        required: true,
+        ref: "User",
+    },
+    username: {
+        type: Schema.Types.String,
         required: true,
         ref: "User",
     },
