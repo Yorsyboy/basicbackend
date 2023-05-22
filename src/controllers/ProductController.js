@@ -54,15 +54,18 @@ export const updatedProduct = asyncHandler(async (req, res, next) => {
             throw new Error("User not found");
         }
 
-        console.log(findProduct.user.toString(), req.user.id);
+        // // console.log(findProduct.user.toString(), req.user._id.toString());
+        // if (findProduct.user.toString() !== req.user._id.toString()) {
+        //     console.log(findProduct.user.toString(), req.user._id.toString());
+        // }
 
         // check if user is the owner of the product
-        if (findProduct.user.toString() !== req.user.id) {
+        if (findProduct.user.toString() !== req.user._id.toString()) {
             res.status(401);
             throw new Error("User not authorized");
         }
 
-        // const product = await Product.findByIdAndUpdate(req.params.id);
+        // const product = await Product.findByIdAndUpdate(req.params.id); 
 
         findProduct.name = req.body.name;
         findProduct.description = req.body.description;
